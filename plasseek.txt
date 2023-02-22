@@ -1,0 +1,31 @@
+PFdirectory=$PWD
+cd $HOME
+git clone https://github.com/StuntsPT/NCBI_Mass_Downloader
+cd NCBI_Mass_Downloader
+echo "The database is about to be downloaded."
+echo "This may take a while."
+python3 NCBI_downloader.py -q '(bacteria[filter] AND biomol_genomic[PROP] AND refseq[filter] AND is_nuccore[filter] AND plasmid[filter]) AND ("0001/01/01"[PDAT] : "2022/12/01"[PDAT])' -d "nucleotide" -o ${PFdirectory}/plasmid_refseq.fasta
+
+
+git clone https://bitbucket.org/genomicepidemiology/kma.git
+cd kma && make
+
+
+kma index -i plasmid.db.fasta -Sparse TG
+
+
+FILE=$(zenity --file-selection --title="Dear PlasSeek user, please select a FASTQ file to scan for plasmids" --file-filter=""*.fastq" "*.fq" "*.fna"")
+
+
+name=$(zenity --entry \
+--title="Output file name" \
+--text="Provide output file name:" \
+--entry-text "trnascanoutput")
+
+
+path=$(dirname $FILE )
+
+cd $path
+
+
+kma -i /media/smplrd/ubuntu/EXP13/no_sample/20230113_1723_MN34235_FAT65177_a33554b74/fast5/Highaccuracy/pass/barcode04/porechoped.fastq -t_db plasmid.db.fasta -mem_mode -mp 20 -mrs 0.0 -bcNano -bc 0.7 -o /media/smplrd/ubuntu/EXP13/no_sample/20230113_1723_MN34235_FAT65177_a33554b74/fast5/Highaccuracy/pass/barcode04/plasseek^C
